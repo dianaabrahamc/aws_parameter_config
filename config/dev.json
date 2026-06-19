@@ -4,3 +4,4 @@
   "state-machine-arn": "arn:aws:states:ap-south-1:992382372695:stateMachine:statemachine-demo",
   "scripts-bucket": "s3-bucket-demo-sns-sqs-lambda-step"
 }
+
