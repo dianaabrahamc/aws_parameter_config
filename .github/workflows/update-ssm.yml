@@ -1,0 +1,51 @@
+name: Update SSM parameters
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'config/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  update-ssm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::992382372695:role/github-actions-ssm-role
+          aws-region: ap-south-1
+
+      - name: Write dev params to SSM
+        run: |
+          CONFIG=$(cat config/dev.json)
+
+          aws ssm put-parameter \
+            --name "/myproject/dev/input-bucket" \
+            --value "$(echo $CONFIG | jq -r '."input-bucket"')" \
+            --type String --overwrite
+
+          aws ssm put-parameter \
+            --name "/myproject/dev/output-bucket" \
+            --value "$(echo $CONFIG | jq -r '."output-bucket"')" \
+            --type String --overwrite
+
+          aws ssm put-parameter \
+            --name "/myproject/dev/state-machine-arn" \
+            --value "$(echo $CONFIG | jq -r '."state-machine-arn"')" \
+            --type String --overwrite
+
+          aws ssm put-parameter \
+            --name "/myproject/dev/scripts-bucket" \
+            --value "$(echo $CONFIG | jq -r '."scripts-bucket"')" \
+            --type String --overwrite
+
+          echo "All SSM parameters updated successfully"
